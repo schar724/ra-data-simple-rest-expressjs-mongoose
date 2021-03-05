@@ -104,7 +104,6 @@ import {
             .skip(skip)
             .limit(limit)
             .select(select)
-            .allowDiskUse(true)
             .exec()
         );
         const total = await model.count(filter);
@@ -184,7 +183,6 @@ import {
             .skip(skip)
             .limit(limit)
             .select(select)
-            .allowDiskUse(true)
             .exec()
         );
         const total = await model.count(filter);
