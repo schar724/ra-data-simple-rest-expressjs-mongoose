@@ -67,6 +67,7 @@ import {
         Object.entries(filter).map(([key, value]: any) => {
           switch (key) {
             case "_id":
+            case "status":
               break;
             case "id":
               filter._id = filter.id;
