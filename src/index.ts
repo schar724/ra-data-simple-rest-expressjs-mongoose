@@ -310,6 +310,7 @@ import {
     actions?: Array<string>;
     middlewares?: Array<RequestHandler>;
     select?: string | object;
+    populate?: string | object;
   };
   
   /*
