@@ -44,7 +44,8 @@ import {
     route: string,
     model: Model<any>,
     middlewares: Array<RequestHandler>,
-    select: string | object
+    select: string | object,
+    populate: string | object,
   ) => {
     router.get(
       route + "/",
@@ -105,6 +106,7 @@ import {
             .skip(skip)
             .limit(limit)
             .select(select)
+            .populate(populate)
             .lean()
             .exec()
         );
@@ -319,10 +321,11 @@ import {
     model,
     actions = Object.keys(ACTION_TO_FUNC),
     middlewares = [],
-    select = ""
+    select = "",
+    populate = "",
   }: restProps) => {
     actions.forEach(action => {
-      ACTION_TO_FUNC[action](router, route, model, middlewares, select);
+      ACTION_TO_FUNC[action](router, route, model, middlewares, select, populate);
     });
     return router;
   };
