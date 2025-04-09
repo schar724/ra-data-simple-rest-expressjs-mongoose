@@ -52,6 +52,10 @@ const getList = (
     middlewares,
     async (req: Request, res: Response, next: NextFunction) => {
       let { sort, range, filter } = req.query;
+      console.log("getList");
+      console.log("sort ", sort);
+      console.log("range ", range);
+      console.log("filter ", filter);
 
       if (sort) {
         // @ts-ignore
@@ -155,6 +159,11 @@ const getListPost = (
     async (req: Request, res: Response, next: NextFunction) => {
       let { sort, range } = req.query;
       let { filter } = req.body;
+
+      console.log("getListPost");
+      console.log("sort ", sort);
+      console.log("range ", range);
+      console.log("filter ", filter);
       if (sort) {
         // @ts-ignore
         const a = JSON.parse(sort);
@@ -176,7 +185,13 @@ const getListPost = (
           case "_id":
             break;
           case "id":
-            filter._id = filter.id;
+            if (Array.isArray(value)) {
+              // @ts-ignore
+              filter._id = { $in: value };
+            } else {
+              // @ts-ignore
+              filter._id = value;
+            }
             delete filter.id;
             break;
           case "q":
