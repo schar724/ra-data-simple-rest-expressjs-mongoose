@@ -3,7 +3,7 @@ import {
   Request,
   RequestHandler,
   Response,
-  Router
+  Router,
 } from "express";
 import { Model, Types } from "mongoose";
 
@@ -53,7 +53,6 @@ const getList = (
     async (req: Request, res: Response, next: NextFunction) => {
       let { sort, range, filter } = req.query;
 
-
       if (sort) {
         // @ts-ignore
         const a = JSON.parse(sort);
@@ -77,8 +76,13 @@ const getList = (
           case "status":
             break;
           case "id":
-            // @ts-ignore
-            filter._id = filter.id;
+            if (Array.isArray(value)) {
+              // @ts-ignore
+              filter._id = { $in: value };
+            } else {
+              // @ts-ignore
+              filter._id = value;
+            }
             // @ts-ignore
             delete filter.id;
             break;
@@ -98,7 +102,7 @@ const getList = (
               }
             } else if (Array.isArray(value)) {
               // array
-              filter["$or"] = value.map(val => {
+              filter["$or"] = value.map((val) => {
                 return { [key]: val };
               });
               delete filter[key];
@@ -124,14 +128,14 @@ const getList = (
           // @ts-ignore
           .populate(populate)
           .lean()
-          .exec()
+          .exec(),
       );
       // @ts-ignore
       const total = await model.countDocuments(filter);
 
       res.set("Content-Range", `${skip}-${skip + limit}/${total}`);
       res.json(items);
-    }
+    },
   );
 };
 
@@ -143,7 +147,7 @@ const getListPost = (
   route: string,
   model: Model<any>,
   middlewares: Array<RequestHandler>,
-  select: string | object
+  select: string | object,
 ) => {
   router.post(
     route + "/",
@@ -190,7 +194,7 @@ const getListPost = (
               }
             } else if (Array.isArray(value)) {
               // array
-              filter["$or"] = value.map(val => {
+              filter["$or"] = value.map((val) => {
                 return { [key]: val };
               });
               delete filter[key];
@@ -215,13 +219,13 @@ const getListPost = (
           // @ts-ignore
           .select(select)
           .lean()
-          .exec()
+          .exec(),
       );
       const total = await model.countDocuments(filter);
 
       res.set("Content-Range", `${skip}-${skip + limit}/${total}`);
       res.json(items);
-    }
+    },
   );
 };
 
@@ -233,7 +237,7 @@ const getOne = (
   route: string,
   model: Model<any>,
   middlewares: Array<RequestHandler>,
-  select: string | object
+  select: string | object,
 ) => {
   router.get(
     route + "/:id",
@@ -249,7 +253,7 @@ const getOne = (
         return;
       }
       res.json(renameId([item])[0]);
-    }
+    },
   );
 };
 
@@ -261,7 +265,7 @@ const create = (
   route: string,
   model: Model<any>,
   middlewares: Array<RequestHandler>,
-  select: string | object
+  select: string | object,
 ) => {
   router.post(
     route + "/",
@@ -273,7 +277,7 @@ const create = (
       const item = await model.findOne({ _id: createdItem._id }).select(select);
 
       res.status(201).json(renameId([item])[0]);
-    }
+    },
   );
 };
 
@@ -285,7 +289,7 @@ const update = (
   route: string,
   model: Model<any>,
   middlewares: Array<RequestHandler>,
-  select: string | object
+  select: string | object,
 ) => {
   router.put(
     route + "/:id",
@@ -303,7 +307,7 @@ const update = (
       item.set(data);
       await item.save();
       res.json(renameId([item])[0]);
-    }
+    },
   );
 };
 
@@ -315,7 +319,7 @@ const delete_ = (
   route: string,
   model: Model<any>,
   middlewares: Array<RequestHandler>,
-  select: string | object
+  select: string | object,
 ) => {
   router.delete(
     route + "/:id",
@@ -326,7 +330,7 @@ const delete_ = (
 
       await model.deleteOne({ _id: id }).select(select);
       res.json({ id });
-    }
+    },
   );
 };
 
@@ -336,7 +340,7 @@ const ACTION_TO_FUNC = {
   [GET_ONE]: getOne,
   [CREATE]: create,
   [UPDATE]: update,
-  [DELETE]: delete_
+  [DELETE]: delete_,
 };
 
 type restProps = {
@@ -361,11 +365,10 @@ const rest = ({
   select = "",
   populate = "",
 }: restProps) => {
-  actions.forEach(action => {
+  actions.forEach((action) => {
     ACTION_TO_FUNC[action](router, route, model, middlewares, select, populate);
   });
   return router;
 };
 
 export default rest;
-
